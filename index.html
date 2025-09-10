@@ -12,7 +12,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
     <link rel="stylesheet" href="style.css">
-    <!-- Link to Google Fonts for TH Sarabun -->
+    
+    <!-- Ensured Google Fonts link is correct and placed here -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -102,19 +103,41 @@
                         </div>
                     </div>
                     <div class="border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6">
-                        <div class="flex items-center mb-3">
-                            <input type="checkbox" id="appointmentToggle" class="custom-checkbox h-5 w-5">
-                            <label for="appointmentToggle" class="ml-3 text-gray-700 font-medium">คำนวณจำนวนยาตามนัด</label>
+                        <div class="flex items-center justify-between mb-3">
+                             <div class="flex items-center">
+                                <input type="checkbox" id="appointmentToggle" class="custom-checkbox h-5 w-5">
+                                <label for="appointmentToggle" class="ml-3 text-gray-700 font-medium">คำนวณจำนวนยาตามนัด</label>
+                            </div>
+                            <button id="clearAppointmentBtn" class="hidden text-sm text-blue-600 hover:text-blue-800 font-semibold">ล้างค่า</button>
                         </div>
+
                         <div id="appointmentFields" class="hidden space-y-3">
                             <div>
                                 <label for="startDate" class="block text-sm text-gray-600 mb-1">วันที่เริ่มต้น:</label>
                                 <input type="date" id="startDate" class="input-field">
                             </div>
-                            <div>
+
+                            <div class="flex items-center gap-4 pt-2">
+                                <div class="flex items-center">
+                                    <input type="radio" id="calcByDateRadio" name="appointmentCalcType" value="date" class="custom-radio" checked>
+                                    <label for="calcByDateRadio" class="ml-2 text-gray-600 text-sm">เลือกวันนัด</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" id="calcByWeeksRadio" name="appointmentCalcType" value="weeks" class="custom-radio">
+                                    <label for="calcByWeeksRadio" class="ml-2 text-gray-600 text-sm">ใส่จำนวนสัปดาห์</label>
+                                </div>
+                            </div>
+                            
+                            <div id="appointmentDateGroup">
                                 <label for="endDate" class="block text-sm text-gray-600 mb-1">วันนัดครั้งถัดไป:</label>
                                 <input type="date" id="endDate" class="input-field">
                             </div>
+                            
+                            <div id="appointmentWeeksGroup" class="hidden">
+                                <label for="weeksInput" class="block text-sm text-gray-600 mb-1">จำนวนสัปดาห์:</label>
+                                <input type="number" id="weeksInput" class="input-field" min="1" placeholder="เช่น 4">
+                            </div>
+
                             <div id="daysResult" class="text-center font-semibold text-blue-600 pt-1" aria-live="polite"></div>
                         </div>
                     </div>
