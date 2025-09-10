@@ -1,6 +1,4 @@
-/* --- Google Font Import --- */
-/* Changed font to TH Sarabun */
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
+/* --- Google Font is imported in HTML --- */
 
 /* --- CSS Variables --- */
 :root {
@@ -25,7 +23,6 @@
 }
 
 body {
-    /* Changed font to TH Sarabun */
     font-family: 'Sarabun', sans-serif;
     background-color: var(--background-color);
     color: var(--text-primary);
@@ -465,4 +462,3 @@ body {
 @media (min-width: 640px) {
     .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-
