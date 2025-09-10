@@ -3,49 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warfarin Planner | �ӹǳ��Ҵ�� Warfarin</title>
+    <title>Warfarin Planner | คำนวณขนาดยา Warfarin</title>
     
-    <!-- === Code to Add Start === -->
     <meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="apple-touch-icon.png"> 
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <!-- === Code to Add End === -->
 
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Changed font to TH Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div class="container">
         <header class="app-header">
             <h1>Warfarin Planner</h1>
-            <p>������ӹǳ��ШѴ��Ҵ�� Warfarin</p>
+            <p>โปรแกรมคำนวณและจัดขนาดยา Warfarin</p>
         </header>
 
         <main>
             <!-- Top Grid for Inputs -->
             <div class="top-input-grid">
                 <div class="card">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">1. ��͡�����Ţ�Ҵ��</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">1. กรอกข้อมูลขนาดยา</h2>
                     <div class="space-y-4">
                         <div>
-                            <label for="previousDoseInput" class="block text-gray-700 font-medium mb-2">��Ҵ�ҡ�͹˹�� (mg/week)</label>
-                            <input type="number" id="previousDoseInput" class="input-field" step="0.1" min="0" placeholder="�� 15">
+                            <label for="previousDoseInput" class="block text-gray-700 font-medium mb-2">ขนาดยาก่อนหน้า (mg/week)</label>
+                            <input type="number" id="previousDoseInput" class="input-field" step="0.1" min="0" placeholder="เช่น 15">
                         </div>
                         <div>
-                            <label for="weeklyDoseInput" class="block text-gray-700 font-medium mb-2">��Ҵ������ (mg/week)</label>
-                            <input type="number" id="weeklyDoseInput" class="input-field input-highlight" step="0.1" min="0" placeholder="�� 17.5">
+                            <label for="weeklyDoseInput" class="block text-gray-700 font-medium mb-2">ขนาดยาใหม่ (mg/week)</label>
+                            <input type="number" id="weeklyDoseInput" class="input-field input-highlight" step="0.1" min="0" placeholder="เช่น 17.5">
                         </div>
                     </div>
                     <div id="percentageChange" class="mt-4"></div>
                 </div>
 
                 <div class="card">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">2. ���͡����ҷ����</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">2. เลือกเม็ดยาที่มี</h2>
                     <div class="pill-selection" id="pillSelection">
                         <label class="pill-button-label">
                             <input type="checkbox" value="1" class="pill-checkbox" checked>
@@ -80,40 +79,40 @@
                     </div>
                      <div class="mt-4 flex items-center">
                         <input type="checkbox" id="allowHalf" checked class="custom-checkbox h-5 w-5">
-                        <label for="allowHalf" class="ml-2 text-gray-700">͹حҵ�����������</label>
+                        <label for="allowHalf" class="ml-2 text-gray-700">อนุญาตให้ใช้ครึ่งเม็ด</label>
                     </div>
                 </div>
             </div>
 
             <!-- Settings Card -->
             <div class="card">
-                 <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">3. ��駤�ҡ�äӹǳ����ʴ���</h2>
+                 <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">3. ตั้งค่าการคำนวณและแสดงผล</h2>
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                       <label class="block text-gray-700 font-medium mb-3">�ٻẺ�ѹ�����/��ش��</label>
+                       <label class="block text-gray-700 font-medium mb-3">รูปแบบวันพิเศษ/หยุดยา</label>
                         <div class="space-y-2">
                             <div class="flex items-center">
                                 <input type="radio" id="patternFriSun" name="specialDayPattern" value="fri-sun" class="custom-radio" checked>
-                                <label for="patternFriSun" class="ml-3 text-gray-600">�ء��/�����/�ҷԵ��</label>
+                                <label for="patternFriSun" class="ml-3 text-gray-600">ศุกร์/เสาร์/อาทิตย์</label>
                             </div>
                             <div class="flex items-center">
                                 <input type="radio" id="patternMonWedFri" name="specialDayPattern" value="mon-wed-fri" class="custom-radio">
-                                <label for="patternMonWedFri" class="ml-3 text-gray-600">��Ш���� (�/�/�)</label>
+                                <label for="patternMonWedFri" class="ml-3 text-gray-600">กระจายยา (จ/พ/ศ)</label>
                             </div>
                         </div>
                     </div>
                     <div class="border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6">
                         <div class="flex items-center mb-3">
                             <input type="checkbox" id="appointmentToggle" class="custom-checkbox h-5 w-5">
-                            <label for="appointmentToggle" class="ml-3 text-gray-700 font-medium">�ӹǳ�ӹǹ�ҵ���Ѵ</label>
+                            <label for="appointmentToggle" class="ml-3 text-gray-700 font-medium">คำนวณจำนวนยาตามนัด</label>
                         </div>
                         <div id="appointmentFields" class="hidden space-y-3">
                             <div>
-                                <label for="startDate" class="block text-sm text-gray-600 mb-1">�ѹ����������:</label>
+                                <label for="startDate" class="block text-sm text-gray-600 mb-1">วันที่เริ่มต้น:</label>
                                 <input type="date" id="startDate" class="input-field">
                             </div>
                             <div>
-                                <label for="endDate" class="block text-sm text-gray-600 mb-1">�ѹ�Ѵ���駶Ѵ�:</label>
+                                <label for="endDate" class="block text-sm text-gray-600 mb-1">วันนัดครั้งถัดไป:</label>
                                 <input type="date" id="endDate" class="input-field">
                             </div>
                             <div id="daysResult" class="text-center font-semibold text-blue-600 pt-1" aria-live="polite"></div>
@@ -125,7 +124,7 @@
             <!-- Results Section -->
             <div class="results-section">
                 <div class="flex justify-center mt-4">
-                     <button id="showBtn" class="btn btn-primary">�ʴ�������͡��èѴ��</button>
+                     <button id="showBtn" class="btn btn-primary">แสดงตัวเลือกการจัดยา</button>
                 </div>
                 
                 <div id="adjustmentTable" class="mt-6"></div>
@@ -137,12 +136,10 @@
         </main>
 
         <footer class="app-footer">
-            <p>�Ѳ���� ��.���പ �Ԫ�� �ç��Һ���صôԵ��</p>
+            <p>พัฒนาโดย ภก.ธีรเดช วิชัย โรงพยาบาลอุตรดิตถ์</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
-
-
