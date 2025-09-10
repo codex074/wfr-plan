@@ -1,5 +1,6 @@
 /* --- Google Font Import --- */
-@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap');
+/* Changed font to TH Sarabun */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
 
 /* --- CSS Variables --- */
 :root {
@@ -24,7 +25,8 @@
 }
 
 body {
-    font-family: 'Prompt', sans-serif;
+    /* Changed font to TH Sarabun */
+    font-family: 'Sarabun', sans-serif;
     background-color: var(--background-color);
     color: var(--text-primary);
     line-height: 1.6;
@@ -113,6 +115,7 @@ body {
     border-radius: 0.5rem;
     font-size: 1rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Sarabun', sans-serif;
 }
 .input-field:focus {
     outline: none;
