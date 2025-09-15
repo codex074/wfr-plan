@@ -1381,6 +1381,7 @@
 
             allInstructions.forEach(instruction => {
                 const { mg, half, quarter, count, days: instructionDays } = instruction;
+                
                 const pillColor = getPillColorName(mg);
                 const pillText = quarter ? 'หนึ่งส่วนสี่เม็ด' : (half ? 'ครึ่งเม็ด' : `${count} เม็ด`);
                 const frequency = instructionDays.length;
@@ -1394,7 +1395,7 @@
 
                 if (totalInstances > 0) {
                     let physicalPillsNeeded = quarter ? Math.ceil(totalInstances / 4) : (half ? Math.ceil(totalInstances / 2) : totalInstances * count);
-                    pillCountText = `(ใช้ ${physicalPillsNeeded} เม็ดสำหรับ ${periodText})`;
+                    pillCountText = `${physicalPillsNeeded} เม็ด/${periodText}`;
                 }
 
                 let pillIconHtml = '';
@@ -1403,9 +1404,12 @@
                 else for (let i = 0; i < count; i++) pillIconHtml += `<span class="pill pill-${mg}mg" title="${mg} mg เต็มเม็ด"></span>`;
                 
                 html += `
-                    <div class="text-sm p-2 ${bgColor} border rounded flex items-center justify-between">
-                        <div class="flex items-center"><div class="mr-3 flex items-center flex-shrink-0 w-24 flex-wrap">${pillIconHtml}</div><div class="flex-grow">${instructionLine}</div></div>
-                        <div class="text-xs text-gray-500 flex-shrink-0 ml-2 text-right no-print">${pillCountText}</div>
+                    <div class="text-sm p-3 ${bgColor} border rounded flex items-center">
+                        <div class="flex-shrink-0 w-10 flex justify-center items-center mr-3">${pillIconHtml}</div>
+                        <div class="flex-grow flex justify-between items-center gap-2">
+                            <span class="flex-grow">${instructionLine}</span>
+                            <span class="text-xs text-gray-600 font-semibold no-print flex-shrink-0 whitespace-nowrap">${pillCountText}</span>
+                        </div>
                     </div>`;
             });
             
