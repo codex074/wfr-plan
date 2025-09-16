@@ -3,12 +3,12 @@
   "name": "Warfarin Dose Calculator",
   "icons": [
     {
-      "src": "https://i.ibb.co/cQp26v4/warfarin-calculator-icon.png",
+      "src": "android-chrome-192x192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "https://i.ibb.co/cQp26v4/warfarin-calculator-icon.png",
+      "src": "android-chrome-512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
