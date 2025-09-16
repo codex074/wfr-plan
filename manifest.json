@@ -1,14 +1,14 @@
 {
   "short_name": "Warfarin",
-  "name": "Warfarin Planner",
+  "name": "Warfarin Dose Calculator",
   "icons": [
     {
-      "src": "android-chrome-192x192.png",
+      "src": "https://i.ibb.co/cQp26v4/warfarin-calculator-icon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "android-chrome-512x512.png",
+      "src": "https://i.ibb.co/cQp26v4/warfarin-calculator-icon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
@@ -18,4 +18,3 @@
   "theme_color": "#3b82f6",
   "background_color": "#ffffff"
 }
-
