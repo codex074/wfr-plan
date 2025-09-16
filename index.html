@@ -1348,13 +1348,25 @@
             function formatDayGroups(dayGroups) {
                 return dayGroups.map(group => {
                     if (group.length === 1) return `วัน${fullThaiDays[group[0]]}`;
+                    
+                    // Handle wrapping around from Saturday (6) to Sunday (0)
+                    const dayOrder = document.querySelector('input[name="dayOrder"]:checked').value;
+                    if (dayOrder === 'sunday' && group[0] === 0 && group[group.length-1] === 6) {
+                         // This case shouldn't happen with correct grouping, but as a safeguard
+                         return `วันอาทิตย์ ถึง วันเสาร์`;
+                    }
+
                     return `วัน${fullThaiDays[group[0]]} ถึง วัน${fullThaiDays[group[group.length - 1]]}`;
                 }).join(', ');
             }
 
             const medicationGroups = {};
             option.combos.forEach((combo, dayIndex) => {
-                combo.forEach(pill => {
+                // Force aggregation of the daily combo array to handle cases
+                // where it might contain duplicate pill definitions (e.g., two '4mg x1' instead of one '4mg x2').
+                const dailyAggregatedCombo = aggregateCombo(combo);
+
+                dailyAggregatedCombo.forEach(pill => {
                     const mg = pill.mg;
                     if (!medicationGroups[mg]) medicationGroups[mg] = {};
                     const pillKey = pill.quarter ? 'quarter' : (pill.half ? 'half' : pill.count);
@@ -1399,9 +1411,14 @@
                 }
 
                 let pillIconHtml = '';
-                if (quarter) pillIconHtml = `<span class="pill pill-${mg}mg pill-quarter-left" title="${mg} mg หนึ่งส่วนสี่เม็ด"></span>`;
-                else if (half) pillIconHtml = `<span class="pill pill-${mg}mg pill-half-left" title="${mg} mg ครึ่งเม็ด"></span>`;
-                else for (let i = 0; i < count; i++) pillIconHtml += `<span class="pill pill-${mg}mg" title="${mg} mg เต็มเม็ด"></span>`;
+                if (quarter) {
+                    pillIconHtml = `<span class="pill pill-${mg}mg pill-quarter-left" title="${mg} mg หนึ่งส่วนสี่เม็ด"></span>`;
+                } else if (half) {
+                    pillIconHtml = `<span class="pill pill-${mg}mg pill-half-left" title="${mg} mg ครึ่งเม็ด"></span>`;
+                } else {
+                    // Always show only one pill icon, even if the count is > 1
+                    pillIconHtml = `<span class="pill pill-${mg}mg" title="${mg} mg เต็มเม็ด"></span>`;
+                }
                 
                 html += `
                     <div class="text-sm p-3 ${bgColor} border rounded flex items-center">
