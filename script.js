@@ -108,6 +108,15 @@ const FLOAT_TOLERANCE = 0.01;
 
 const fullThaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 
+// Function to calculate the standard deviation of daily doses
+function calculateStandardDeviation(doses) {
+    if (!doses || doses.length === 0) return 0;
+    const mean = doses.reduce((sum, val) => sum + val, 0) / doses.length;
+    const squareDiffs = doses.map(val => Math.pow(val - mean, 2));
+    const avgSquareDiff = squareDiffs.reduce((sum, val) => sum + val, 0) / doses.length;
+    return Math.sqrt(avgSquareDiff);
+}
+
 function findComb(target, availablePills, allowHalf, allowQuarter, minPillObjects = 1, maxPillObjects = 4) {
     if (Math.abs(target) < FLOAT_TOLERANCE) {
         return [[]];
@@ -476,18 +485,30 @@ function generateOptions() {
     }
     
     options.sort((a, b) => {
+        // 1. Uniform options (กินเท่ากันทุกวัน) ดีที่สุดเสมอ
+        if (a.type !== b.type) return a.type === 'uniform' ? -1 : 1;
+
+        // 2. [เกณฑ์ใหม่] สำหรับตัวเลือกที่ไม่ใช่ uniform ให้เลือกตัวที่ขนาดยามีความแปรปรวนน้อยกว่า (สม่ำเสมอกว่า)
+        const aStdDev = calculateStandardDeviation(a.dailyDoses);
+        const bStdDev = calculateStandardDeviation(b.dailyDoses);
+        if (Math.abs(aStdDev - bStdDev) > 0.01) { // ใช้ค่า tolerance สำหรับการเปรียบเทียบเลขทศนิยม
+            return aStdDev - bStdDev;
+        }
+
+        // 3. เลือตัวเลือกที่ใช้ "ชนิด" ของยาหักครึ่งเม็ดน้อยกว่า
         const aHalfTypes = countHalfPillTypes(a.combos);
         const bHalfTypes = countHalfPillTypes(b.combos);
         if (aHalfTypes !== bHalfTypes) return aHalfTypes - bHalfTypes;
         
-        if (a.type !== b.type) return a.type === 'uniform' ? -1 : 1;
-        
+        // 4. เลือกรูปแบบที่ซับซ้อนน้อยกว่า (วันหยุด/วันพิเศษน้อยกว่า)
         if (a.complexity !== b.complexity) return a.complexity - b.complexity;
         
+        // 5. เลือกตัวเลือกที่ใช้ "ชนิด" ของเม็ดยาน้อยกว่า
         const aPillTypes = countPillTypes(a.combos);
         const bPillTypes = countPillTypes(b.combos);
         if (aPillTypes !== bPillTypes) return aPillTypes - bPillTypes;
         
+        // 6. เป็นตัวเลือกสุดท้าย ให้เลือกตัวที่ใช้จำนวนเม็ด/ชิ้น รวมกันน้อยที่สุด
         const aTotalObjects = countTotalObjects(a.combos);
         const bTotalObjects = countTotalObjects(b.combos);
         if (aTotalObjects !== bTotalObjects) return aTotalObjects - bTotalObjects;
@@ -866,7 +887,7 @@ function generateMedicationInstructions(option, days, periodText) {
                 <div class="flex-shrink-0 w-10 flex justify-center items-center mr-3">${pillIconHtml}</div>
                 <div class="flex-grow flex justify-between items-center gap-2">
                     <span class="flex-grow">${instructionLine}</span>
-                    <span class="text-xs text-gray-600 font-semibold no-print flex-shrink-0 whitespace-nowrap">${pillCountText}</span>
+                    <span class="text-xs text-gray-600 font-semibold flex-shrink-0 whitespace-nowrap">${pillCountText}</span>
                 </div>
             </div>`;
     });

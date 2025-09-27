@@ -268,19 +268,20 @@ body {
         display: none !important;
     }
 
+    /* --- EDIT START: Fix for landscape mobile printing --- */
+    /* Changed from 'flex' to 'grid' for a stable 7-column layout */
     .option-card .grid {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
         gap: 0.5rem !important;
     }
 
     .day-card {
-        flex: 0 0 120px;
-        max-width: 120px;
+        /* Removed flex properties, not needed with grid */
         page-break-inside: avoid;
     }
-    
+    /* --- EDIT END --- */
+
     .pill {
         box-shadow: none !important;
         border: 1px solid black !important;
