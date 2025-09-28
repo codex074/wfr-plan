@@ -235,7 +235,9 @@ body {
     .print-content {
         display: block !important;
         visibility: visible;
-        position: static;
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         padding: 0;
     }
@@ -296,4 +298,5 @@ body {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
+
 }
