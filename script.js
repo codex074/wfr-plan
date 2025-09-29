@@ -47,7 +47,7 @@ function switchMode(mode) {
     const manualContainer = document.getElementById('manual-mode-container');
     const autoBtn = document.getElementById('mode-auto-btn');
     const manualBtn = document.getElementById('mode-manual-btn');
-    const printBtn = document.getElementById('printBtn');
+    const printBtnAuto = document.getElementById('printBtnAuto');
     
     const dateCalculatorSection = document.getElementById('date-calculator-section');
     const autoPlaceholder = document.getElementById('date-calculator-placeholder-auto');
@@ -58,16 +58,14 @@ function switchMode(mode) {
         manualContainer.classList.add('hidden');
         autoBtn.classList.add('active');
         manualBtn.classList.remove('active');
-        printBtn.onclick = printSelectedOption;
-        updatePrintButtonVisibility();
+        updatePrintButtonVisibility(); // Visibility for auto button
         autoPlaceholder.appendChild(dateCalculatorSection);
     } else { // manual mode
         autoContainer.classList.add('hidden');
         manualContainer.classList.remove('hidden');
         autoBtn.classList.remove('active');
         manualBtn.classList.add('active');
-        printBtn.onclick = printManualSchedule;
-        updateManualPrintButtonVisibility();
+        printBtnAuto.classList.add('hidden'); // Always hide auto button in manual mode
         manualPlaceholder.appendChild(dateCalculatorSection);
     }
 }
@@ -258,9 +256,17 @@ function updateManualSummary() {
         combos: manualSchedule.map(dayPills => aggregateCombo(dayPills))
     };
 
+    const isDoseZero = totalWeeklyDose <= 0;
+
     let summaryHtml = `
         <div class="section-card rounded-lg shadow-md p-6 mt-6" id="manual-summary-card">
-             <h3 class="text-xl font-semibold mb-4 text-gray-800">สรุปและวิธีกินยา</h3>
+             <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">สรุปและวิธีกินยา</h3>
+                <button id="printBtnManual" onclick="printManualSchedule()" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors shadow-md text-sm flex items-center ${isDoseZero ? 'hidden' : ''}">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    <span>พิมพ์</span>
+                </button>
+             </div>
     `;
 
     if (totalWeeklyDose > 0) {
@@ -271,7 +277,6 @@ function updateManualSummary() {
 
     summaryHtml += `</div>`;
     summaryContainer.innerHTML = summaryHtml;
-    updateManualPrintButtonVisibility();
 }
 
 function clearManualSchedule() {
@@ -298,18 +303,6 @@ function clearManualSchedule() {
             )
         }
     })
-}
-
-
-function updateManualPrintButtonVisibility() {
-    const printBtn = document.getElementById('printBtn');
-    const totalDose = manualSchedule.flat().reduce((sum, p) => sum + (p.mg || 0), 0);
-
-    if (totalDose > 0) {
-        printBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
-    } else {
-        printBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
-    }
 }
 
 function printManualSchedule() {
@@ -355,17 +348,14 @@ function printManualSchedule() {
     const summaryCard = document.getElementById('manual-summary-card');
     if (summaryCard) {
         const clonedSummary = summaryCard.cloneNode(true);
-        const titleInSummary = clonedSummary.querySelector('h3');
-        if (titleInSummary) titleInSummary.remove();
+        // Remove the header (title and button) from the printed summary
+        const header = clonedSummary.querySelector('.flex.justify-between');
+        if (header) header.remove();
         printContainer.appendChild(clonedSummary);
     }
     
     printContent(printContainer, "ขนาดยาวาร์ฟาริน (Warfarin) ที่รับประทาน", `ขนาดยารวม ${totalWeeklyDose.toFixed(2)} mg/สัปดาห์`);
 }
-
-// ... The rest of the script.js file remains the same ...
-// [I have omitted the rest of the file for brevity as there are no more changes]
-// ... Just copy this new version over the existing script.js file ...
 
 // ===================================================================================
 //
@@ -912,12 +902,8 @@ function selectOption(optionIndex) {
 }
 
 function updatePrintButtonVisibility() {
-    const printBtn = document.getElementById('printBtn');
-    if (window.pageYOffset > 300 && selectedOption >= 0) {
-        printBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
-    } else {
-        printBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
-    }
+    const printBtn = document.getElementById('printBtnAuto');
+    printBtn.classList.toggle('hidden', selectedOption < 0);
 }
 
 // --- Event Listeners ---
@@ -943,15 +929,10 @@ document.getElementById('previousDose').addEventListener('input', function() {
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 window.addEventListener('scroll', function() {
     const backToTopBtn = document.getElementById('backToTopBtn');
-    const isManualMode = !document.getElementById('manual-mode-container').classList.contains('hidden');
-    
     if (window.pageYOffset > 300) {
         backToTopBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
-        if (isManualMode) updateManualPrintButtonVisibility();
-        else updatePrintButtonVisibility();
     } else {
         backToTopBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
-        document.getElementById('printBtn').classList.add('opacity-0', 'invisible', 'translate-y-4');
     }
 });
 

@@ -105,27 +105,25 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
     <div class="container mx-auto px-4 py-6 max-w-6xl">
+        
         <div class="relative mb-8 pt-2">
-    <div class="absolute top-0 left-0">
-        <button onclick="toggleSidebar()" class="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-colors flex items-center gap-2 text-sm shadow-md">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-            <span class="hidden sm:inline">ตั้งค่าเพิ่มเติม</span>
-            <span class="sm:hidden">ตั้งค่า</span>
-        </button>
-    </div>
-
-    <div class="text-center">
-        <img src="hospital_logo.png" alt="โลโก้โรงพยาบาล" class="h-20 object-contain inline-block mb-4">
-        <h1 class="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
-            คำนวณขนาดยา Warfarin
-        </h1>
-        <div class="text-lg md:text-xl text-gray-600 font-medium mb-2">
-            ยาต้านการแข็งตัวของเลือด
+            <div class="absolute top-0 left-0">
+                <button onclick="toggleSidebar()" class="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-colors flex items-center gap-2 text-sm shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <span class="hidden sm:inline">ตั้งค่าเพิ่มเติม</span>
+                    <span class="sm:hidden">ตั้งค่า</span>
+                </button>
+            </div>
+    
+            <div class="text-center">
+                <img src="hospital_logo.png" alt="โลโก้โรงพยาบาล" class="h-28 object-contain inline-block mb-4">
+                <h1 class="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                    คำนวณขนาดยา Warfarin
+                </h1>
+            </div>
         </div>
-    </div>
-</div>
 
         <div class="flex justify-center mb-6 gap-2">
             <button type="button" id="mode-auto-btn" class="toggle-btn active">
@@ -139,7 +137,7 @@
         <div id="auto-mode-container">
             <div class="section-card rounded-lg shadow-md p-4 mb-6">
                 <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-pink-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                     ข้อมูลขนาดยา
@@ -163,9 +161,7 @@
                     <div id="changeText" class="text-2xl font-semibold"></div>
                 </div>
             </div>
-
-            <div id="date-calculator-placeholder-auto"></div>
-
+            
             <div id="adjustmentButtons" class="section-card rounded-lg shadow-md p-6 mb-6 hidden">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800">ปรับขนาดยาอัตโนมัติ</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2">
@@ -181,6 +177,9 @@
                     <button onclick="adjustDose(25)" class="px-3 py-2 bg-green-100 text-green-800 rounded-md hover:bg-green-200 text-sm">+25%</button>
                 </div>
             </div>
+
+            <div id="date-calculator-placeholder-auto"></div>
+
             <div id="results" class="hidden">
                 <div id="optionsContainer"></div>
                 <div id="showMoreContainer" class="mt-4"></div>
@@ -255,7 +254,7 @@
         </div>
     </div>
 
-    <button id="printBtn" class="fixed bottom-6 right-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 z-50 opacity-0 invisible transform translate-y-4" onclick="printSelectedOption()" title="พิมพ์ตัวเลือกที่เลือก">
+    <button id="printBtnAuto" class="hidden fixed bottom-6 right-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 z-50" onclick="printSelectedOption()" title="พิมพ์ตัวเลือกที่เลือก">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
         </svg>
