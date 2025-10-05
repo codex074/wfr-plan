@@ -266,19 +266,18 @@ body {
 }
 
 
-/* ***** MODIFIED: Replaced the entire @media print block with a more stable method ***** */
 @media print {
-    /* Hide everything on the page by default */
+    /* ซ่อนทุกอย่างในหน้าเว็บ แต่ยังคงโครงสร้างไว้ */
     body * {
         visibility: hidden;
     }
 
-    /* Make the print container and everything inside it visible again */
+    /* ทำให้ส่วนที่จะพิมพ์และเนื้อหาข้างในกลับมามองเห็นได้ */
     .print-content, .print-content * {
         visibility: visible;
     }
     
-    /* Position the print container to fill the page, detaching it from normal flow */
+    /* จัดตำแหน่งส่วนที่จะพิมพ์ให้อยู่บนสุดและเต็มความกว้าง */
     .print-content {
         position: absolute;
         left: 0;
@@ -286,15 +285,20 @@ body {
         width: 100%;
     }
 
-    /* General print setup */
+    /* **FIX**: สั่งให้ซ่อนเนื้อหาหลักออกจากโครงสร้างเว็บโดยสมบูรณ์ เพื่อป้องกันหน้าว่าง */
+    #main-content {
+        display: none !important;
+    }
+
+    /* ตั้งค่าพื้นฐานสำหรับหน้ากระดาษ */
     html, body {
         height: auto !important;
         min-height: unset !important;
         overflow: visible !important;
         background: #fff !important;
     }
-
-    /* Still useful to have for elements we *never* want to print, even if accidentally visible */
+    
+    /* ซ่อนองค์ประกอบอื่นๆ ที่ไม่ต้องการพิมพ์ */
     .no-print {
         display: none !important;
     }
