@@ -610,7 +610,6 @@ function formatDayGroups(dayGroups) {
     return dayGroups.map(group => group.length === 1 ? `วัน${fullThaiDays[group[0]]}` : `วัน${fullThaiDays[group[0]]} ถึง วัน${fullThaiDays[group[group.length - 1]]}`).join(', ');
 }
 
-// ***** ADDED: New helper function to convert dose to text like "2 เม็ดครึ่ง" *****
 function doseToPillText(totalDose, mg) {
     if (!mg || mg === 0) return '';
     const numPills = totalDose / mg;
@@ -638,8 +637,6 @@ function doseToPillText(totalDose, mg) {
     return text || '0 เม็ด';
 }
 
-
-// ***** MODIFIED: This function now combines instructions for the same medication on the same days *****
 function generateMedicationInstructions(option) {
     let days = 7, periodText = '1 สัปดาห์';
     if (document.getElementById('useDateRange').checked) {
@@ -666,7 +663,6 @@ function generateMedicationInstructions(option) {
         html += '<p class="text-gray-500">ไม่มีข้อมูล</p>';
     } else {
         const finalInstructions = {};
-        
         Object.values(medicationGroups).forEach(instr => {
             const key = `${instr.mg}-${instr.days.sort().join(',')}`;
             if (!finalInstructions[key]) {
@@ -683,19 +679,13 @@ function generateMedicationInstructions(option) {
 
         Object.values(finalInstructions).sort((a,b) => b.mg - a.mg).forEach(group => {
             const { mg, days: instrDays, totalDailyDose, originalInstructions } = group;
-            
             const pillText = doseToPillText(totalDailyDose, mg);
             const dayText = formatDayGroups(groupConsecutiveDays(instrDays));
             const freq = instrDays.length;
-
-            const instructionLineForDisplay = freq === 7 
-                ? `${mg} mg (<strong>${getPillColorName(mg)}</strong>) กิน <strong>${pillText}</strong> ทุกวัน` 
-                : `${mg} mg (<strong>${getPillColorName(mg)}</strong>) กิน <strong>${pillText}</strong> สัปดาห์ละ ${freq} ครั้ง เฉพาะ <strong>${dayText}</strong>`;
-            
+            const instructionLineForDisplay = freq === 7 ? `${mg} mg (<strong>${getPillColorName(mg)}</strong>) กิน <strong>${pillText}</strong> ทุกวัน` : `${mg} mg (<strong>${getPillColorName(mg)}</strong>) กิน <strong>${pillText}</strong> สัปดาห์ละ ${freq} ครั้ง เฉพาะ <strong>${dayText}</strong>`;
             let totalPhysicalPillsNeeded = 0;
             const startDateValue = document.getElementById('startDate').value;
             const startDayOfWeek = startDateValue ? new Date(startDateValue).getDay() : new Date().getDay();
-
             originalInstructions.forEach(instr => {
                 let totalInstances = 0;
                 for (let d = 0; d < days; d++) {
@@ -704,17 +694,9 @@ function generateMedicationInstructions(option) {
                 totalPhysicalPillsNeeded += instr.quarter ? Math.ceil(totalInstances / 4) : (instr.half ? Math.ceil(totalInstances / 2) : totalInstances * instr.count);
             });
             const pillCountText = totalPhysicalPillsNeeded > 0 ? `${totalPhysicalPillsNeeded} เม็ด/${periodText}` : '';
-            
             const singlePillIconInstr = { ...originalInstructions[0], count: 1 };
             const pillIconHtml = generatePillVisual([singlePillIconInstr]);
-
-            html += `<div class="text-sm p-3 ${getPillBgColor(mg)} border rounded flex items-center">
-                <div class="flex-shrink-0 w-10 flex justify-center items-center mr-3">${pillIconHtml}</div>
-                <div class="flex-grow flex justify-between items-center gap-2">
-                    <span class="flex-grow">${instructionLineForDisplay}</span>
-                    <span class="text-xs text-gray-600 font-semibold flex-shrink-0 whitespace-nowrap">${pillCountText}</span>
-                </div>
-            </div>`;
+            html += `<div class="text-sm p-3 ${getPillBgColor(mg)} border rounded flex items-center"><div class="flex-shrink-0 w-10 flex justify-center items-center mr-3">${pillIconHtml}</div><div class="flex-grow flex justify-between items-center gap-2"><span class="flex-grow">${instructionLineForDisplay}</span><span class="text-xs text-gray-600 font-semibold flex-shrink-0 whitespace-nowrap">${pillCountText}</span></div></div>`;
         });
     }
 
@@ -729,12 +711,8 @@ function generateMedicationInstructions(option) {
     return html;
 }
 
-
 // --- UI Toggles & Actions ---
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('-translate-x-full');
-    document.getElementById('sidebarOverlay').classList.toggle('hidden');
-}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('sidebarOverlay').classList.toggle('hidden'); }
 function togglePill(pillSize) { document.getElementById(`pill${pillSize}Btn`).classList.toggle('active'); document.getElementById(`pill${pillSize}`).checked = !document.getElementById(`pill${pillSize}`).checked; hideResults(); setupPillPalette(); }
 function toggleAllowHalf() { document.getElementById('allowHalfBtn').classList.toggle('active'); document.getElementById('allowHalf').checked = !document.getElementById('allowHalf').checked; hideResults(); }
 function toggleAllowQuarter() { document.getElementById('allowQuarterBtn').classList.toggle('active'); document.getElementById('allowQuarter').checked = !document.getElementById('allowQuarter').checked; hideResults(); }
@@ -826,6 +804,7 @@ function printSelectedOption() {
     }
 }
 
+// ***** MODIFIED: Added a setTimeout to delay removing the print content *****
 function printContent(elementToPrint, title, subtitle) {
     const printDiv = document.createElement('div');
     printDiv.className = 'print-content';
@@ -838,5 +817,7 @@ function printContent(elementToPrint, title, subtitle) {
     printDiv.appendChild(elementToPrint);
     document.body.appendChild(printDiv);
     window.print();
-    document.body.removeChild(printDiv);
+    setTimeout(() => {
+        document.body.removeChild(printDiv);
+    }, 500);
 }
