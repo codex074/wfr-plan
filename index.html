@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen bg-gradient-to-br from-sky-50 to-blue-100">
-    <div id="sidebar" class="fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+    <div id="sidebar" class="fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-50 overflow-y-auto no-print">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-800">ตั้งค่าเพิ่มเติม</h2>
@@ -102,12 +102,12 @@
         </div>
     </div>
 
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden no-print" onclick="toggleSidebar()"></div>
 
     <div class="container mx-auto px-4 py-6 max-w-6xl">
         
         <div class="relative mb-8 pt-2">
-            <div class="absolute top-0 left-0">
+             <div class="absolute top-0 left-0 no-print">
                 <button onclick="toggleSidebar()" class="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-colors flex items-center gap-2 text-sm shadow-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -118,14 +118,14 @@
             </div>
     
             <div class="text-center">
-                <img src="hospital_logo.png" alt="โลโก้โรงพยาบาล" class="h-28 object-contain inline-block mb-4">
+                <img src="hospital_logo.png" alt="โลโก้โรงพยาบาล" id="hospital-logo" class="h-28 object-contain inline-block mb-4">
                 <h1 class="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
                     คำนวณขนาดยา Warfarin
                 </h1>
             </div>
         </div>
 
-        <div class="flex justify-center mb-6 gap-2">
+        <div class="flex justify-center mb-6 gap-2 no-print">
             <button type="button" id="mode-auto-btn" class="toggle-btn active">
                 คำนวณอัตโนมัติ
             </button>
@@ -135,7 +135,7 @@
         </div>
 
         <div id="auto-mode-container">
-            <div class="section-card rounded-lg shadow-md p-4 mb-6">
+            <div class="section-card rounded-lg shadow-md p-4 mb-6 no-print">
                 <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
                     <svg class="w-5 h-5 text-pink-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -162,7 +162,7 @@
                 </div>
             </div>
             
-            <div id="adjustmentButtons" class="section-card rounded-lg shadow-md p-6 mb-6 hidden">
+            <div id="adjustmentButtons" class="section-card rounded-lg shadow-md p-6 mb-6 hidden no-print">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800">ปรับขนาดยาอัตโนมัติ</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2">
                     <button onclick="adjustDose(-25)" class="px-3 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200 text-sm">-25%</button>
@@ -178,7 +178,7 @@
                 </div>
             </div>
 
-            <div id="date-calculator-placeholder-auto"></div>
+            <div id="date-calculator-placeholder-auto" class="no-print"></div>
 
             <div id="results" class="hidden">
                 <div id="optionsContainer"></div>
@@ -187,7 +187,7 @@
         </div>
         
         <div id="manual-mode-container" class="hidden">
-            <div class="section-card rounded-lg shadow-md p-6 mb-6">
+            <div class="section-card rounded-lg shadow-md p-6 mb-6 no-print">
                 <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
                     <div class="flex-grow">
                         <h2 class="text-xl font-semibold text-gray-800">สร้างฉลากยาด้วยตนเอง</h2>
@@ -201,12 +201,12 @@
                 </div>
             </div>
             
-            <div id="date-calculator-placeholder-manual"></div>
+            <div id="date-calculator-placeholder-manual" class="no-print"></div>
 
             <div id="manual-schedule-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">
                 </div>
 
-            <div class="section-card rounded-lg shadow-md p-6 mb-6">
+            <div class="section-card rounded-lg shadow-md p-6 mb-6 no-print">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800">คลังเม็ดยา (ลากเม็ดยา)</h3>
                 <div id="pill-palette" class="flex flex-wrap gap-4 justify-center items-center bg-gray-50 p-4 rounded-lg">
                     </div>
@@ -254,19 +254,19 @@
         </div>
     </div>
 
-    <button id="printBtnAuto" class="hidden fixed bottom-6 right-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 z-50" onclick="printSelectedOption()" title="พิมพ์ตัวเลือกที่เลือก">
+    <button id="printBtnAuto" class="hidden fixed bottom-6 right-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 z-50 no-print" onclick="printSelectedOption()" title="พิมพ์ตัวเลือกที่เลือก">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
         </svg>
     </button>
 
-    <button id="backToTopBtn" class="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 z-50 opacity-0 invisible transform translate-y-4" onclick="scrollToTop()">
+    <button id="backToTopBtn" class="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-3 rounded-full shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 z-50 opacity-0 invisible transform translate-y-4 no-print" onclick="scrollToTop()">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
         </svg>
     </button>
 
-    <div id="pill-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4">
+    <div id="pill-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4 no-print">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4 text-center" id="modal-title">เพิ่มยา</h3>
             <form id="pill-modal-form">
@@ -299,8 +299,7 @@
         </div>
     </div>
 
-
-    <footer class="bg-gray-100 border-t border-gray-200 py-4 mt-12">
+    <footer class="bg-gray-100 border-t border-gray-200 py-4 mt-12 no-print">
         <div class="container mx-auto px-4 text-center">
             <div class="mb-1">
                 <span class="text-sm font-medium text-gray-700">© 2025 ระบบคำนวณขนาดยา Warfarin</span>
@@ -312,6 +311,7 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

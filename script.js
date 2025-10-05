@@ -28,6 +28,62 @@ function roundToHalf(num) {
 
 // --- App Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // ***** ADDED: Logic to handle the '?speak' URL parameter for text-to-speech *****
+    const urlParams = new URLSearchParams(window.location.search);
+    const textToSpeak = urlParams.get('speak');
+
+    if (textToSpeak) {
+        const decodedText = decodeURIComponent(textToSpeak);
+        document.body.innerHTML = `
+            <div id="speaker-view" style="font-family: 'Sarabun', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; padding: 2em; background-color: #f0f9ff; color: #075985;">
+                <div id="instruction-text">
+                    <h1 style="color: #0c4a6e; font-size: 1.5rem; margin-bottom: 1rem;">วิธีกินยา</h1>
+                    <p style="font-size: 1.2rem; line-height: 1.6; max-width: 600px; margin-bottom: 2rem;">${decodedText}</p>
+                </div>
+                <button id="play-speech-btn" style="background-color: #0ea5e9; color: white; border: none; padding: 1rem 2rem; border-radius: 0.5rem; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m9.9 9.9a1 1 0 01-1.414 0L12 18.293l-1.414 1.414a1 1 0 01-1.414-1.414l1.414-1.414L9.172 17a1 1 0 01-1.414-1.414l1.414-1.414L7.757 15.5a1 1 0 01-1.414-1.414l1.414-1.414L6.343 14a1 1 0 010-1.414l1.414-1.414L6.343 11a1 1 0 011.414-1.414l1.414 1.414L9.172 9.5a1 1 0 011.414-1.414l1.414 1.414L12 8.293l1.414-1.414a1 1 0 011.414 1.414L13.414 9.5l1.414 1.414a1 1 0 010 1.414l-1.414 1.414 1.414 1.414a1 1 0 01-1.414 1.414l-1.414-1.414-1.414 1.414z"></path></svg>
+                    แตะเพื่อฟังเสียง
+                </button>
+                 <div id="playing-status" style="display: none; margin-top: 1rem;">กำลังอ่าน...</div>
+            </div>
+        `;
+
+        const playButton = document.getElementById('play-speech-btn');
+        const speakText = () => {
+            const utterance = new SpeechSynthesisUtterance(decodedText);
+            utterance.lang = 'th-TH';
+            utterance.rate = 0.9; 
+
+            const voices = speechSynthesis.getVoices();
+            const googleVoice = voices.find(voice => voice.name.includes('Google') && voice.lang === 'th-TH');
+            const kedaVoice = voices.find(voice => voice.name.includes('Keda') && voice.lang === 'th-TH');
+            const thaiVoice = voices.find(voice => voice.lang === 'th-TH');
+            utterance.voice = googleVoice || kedaVoice || thaiVoice || null;
+            
+            utterance.onstart = () => {
+                document.getElementById('instruction-text').style.display = 'none';
+                playButton.style.display = 'none';
+                document.getElementById('playing-status').style.display = 'block';
+            };
+            
+            utterance.onend = () => {
+                 document.getElementById('instruction-text').style.display = 'block';
+                 playButton.style.display = 'flex';
+                 document.getElementById('playing-status').style.display = 'none';
+            };
+
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+        };
+        
+        playButton.onclick = speakText;
+        if (speechSynthesis.getVoices().length === 0) {
+            speechSynthesis.onvoiceschanged = () => {};
+        }
+        return; // Stop further execution if in speak mode
+    }
+    // ***** END of added logic *****
+
     // Mode Toggling
     document.getElementById('mode-auto-btn').addEventListener('click', () => switchMode('auto'));
     document.getElementById('mode-manual-btn').addEventListener('click', () => switchMode('manual'));
@@ -262,7 +318,7 @@ function updateManualSummary() {
         <div class="section-card rounded-lg shadow-md p-6 mt-6" id="manual-summary-card">
              <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold text-gray-800">สรุปและวิธีกินยา</h3>
-                <button id="printBtnManual" onclick="printManualSchedule()" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors shadow-md text-sm flex items-center ${isDoseZero ? 'hidden' : ''}">
+                <button id="printBtnManual" onclick="printManualSchedule()" class="no-print bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors shadow-md text-sm flex items-center ${isDoseZero ? 'hidden' : ''}">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     <span>พิมพ์</span>
                 </button>
@@ -621,7 +677,7 @@ function generateOptions() {
     showMoreContainer.innerHTML = '';
 
     if (allCalculatedOptions.length > 0) {
-        container.innerHTML = `<div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg"><div class="text-blue-800 font-medium">พบตัวเลือกทั้งหมด ${allCalculatedOptions.length} แบบ</div></div>`;
+        container.innerHTML = `<div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg no-print"><div class="text-blue-800 font-medium">พบตัวเลือกทั้งหมด ${allCalculatedOptions.length} แบบ</div></div>`;
         loadMoreOptions();
     } else {
         container.innerHTML = '<div class="text-gray-600 text-center p-4">ไม่พบตัวเลือกที่เหมาะสม กรุณาปรับขนาดยาหรือเลือกเม็ดยาเพิ่มเติม</div>';
@@ -642,7 +698,7 @@ function loadMoreOptions() {
     showMoreContainer.innerHTML = '';
     if (allCalculatedOptions.length > displayedOptionsCount) {
         const button = document.createElement('button');
-        button.className = 'w-auto mx-auto px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors shadow-md block';
+        button.className = 'w-auto mx-auto px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors shadow-md block no-print';
         button.innerHTML = "ตัวเลือกเพิ่มเติม";
         button.onclick = loadMoreOptions;
         showMoreContainer.appendChild(button);
@@ -691,7 +747,7 @@ function generateOptionCard(option, optionNumber) {
     const dayOrder = document.querySelector('input[name="dayOrder"]:checked').value;
     const startDay = dayOrder === 'sunday' ? 0 : 1;
     let html = `<div class="option-card section-card rounded-lg shadow-md p-6 mb-6" id="option-card-${optionNumber - 1}" onclick="selectOption(${optionNumber - 1})" data-total-dose="${totalWeekly.toFixed(1)}">
-        <div class="option-checkbox" id="checkbox-${optionNumber - 1}"><span class="checkmark hidden">✓</span></div>
+        <div class="option-checkbox no-print" id="checkbox-${optionNumber - 1}"><span class="checkmark hidden">✓</span></div>
         <h4 class="text-xl font-semibold mb-4 text-gray-800 pr-12">ตัวเลือกที่ ${optionNumber}</h4>
         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6">`;
     
@@ -705,9 +761,9 @@ function generateOptionCard(option, optionNumber) {
         
         html += `<div class="border-2 ${isDayOff ? 'border-red-300' : 'border-gray-200'} rounded-xl day-card shadow-lg overflow-hidden">
             <div class="font-bold text-center py-3 text-lg ${headerColors[dayIndex]}">${dayName}</div>
-            <div class="${isDayOff ? 'bg-gray-50' : 'bg-white'} p-4 text-center">
-                <div class="text-sm text-gray-700 font-medium mb-3">${isDayOff ? '' : `${dose.toFixed(1)} mg`}</div>
-                ${isDayOff ? `<div class="p-3 text-center"><div class="text-4xl mb-2">🚫</div><div class="text-red-600 font-bold text-sm">หยุดยา</div></div>` : `<div class="text-center"><div class="mb-3">${generatePillVisual(combo)}</div><div class="text-xs text-gray-700 font-medium">${generatePillText(combo)}</div></div>`}
+            <div class="${isDayOff ? 'bg-gray-50' : 'bg-white'} p-4 text-center min-h-[100px] flex flex-col justify-center">
+                <div class="text-sm text-gray-700 font-medium mb-3">${isDayOff ? '' : `${dose.toFixed(2)} mg`}</div>
+                ${isDayOff ? `<div class="text-center"><div class="text-4xl mb-2">🚫</div><div class="text-red-600 font-bold text-sm">หยุดยา</div></div>` : `<div class="text-center">${generatePillVisual(combo)}</div>`}
             </div></div>`;
     }
     
@@ -743,6 +799,83 @@ function generatePillText(combo) {
 //
 // ===================================================================================
 
+// ***** ADDED: New function to generate QR Code and Speech button *****
+function generateQrCodeAndSpeechButton(instructionsText, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Remove previous instance if it exists
+    const oldWrapper = container.querySelector('.qr-speech-wrapper');
+    if (oldWrapper) oldWrapper.remove();
+    
+    const newWrapper = document.createElement('div');
+    newWrapper.className = 'qr-speech-wrapper mt-4'; 
+
+    // Remove HTML tags and extra spaces for cleaner speech
+    const simplifiedInstructions = instructionsText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Create Speech Button (not for printing)
+    const speechButton = document.createElement('button');
+    speechButton.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m9.9 9.9a1 1 0 01-1.414 0L12 18.293l-1.414 1.414a1 1 0 01-1.414-1.414l1.414-1.414L9.172 17a1 1 0 01-1.414-1.414l1.414-1.414L7.757 15.5a1 1 0 01-1.414-1.414l1.414-1.414L6.343 14a1 1 0 010-1.414l1.414-1.414L6.343 11a1 1 0 011.414-1.414l1.414 1.414L9.172 9.5a1 1 0 011.414-1.414l1.414 1.414L12 8.293l1.414-1.414a1 1 0 011.414 1.414L13.414 9.5l1.414 1.414a1 1 0 010 1.414l-1.414 1.414 1.414 1.414a1 1 0 01-1.414 1.414l-1.414-1.414-1.414 1.414z"></path></svg><span>ฟังเสียง</span>`;
+    speechButton.className = 'toggle-btn flex items-center justify-center no-print';
+    speechButton.onclick = () => {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(simplifiedInstructions);
+            utterance.lang = 'th-TH';
+            utterance.rate = 0.9;
+
+            const voices = speechSynthesis.getVoices();
+            const googleVoice = voices.find(voice => voice.name.includes('Google') && voice.lang === 'th-TH');
+            const kedaVoice = voices.find(voice => voice.name.includes('Keda') && voice.lang === 'th-TH');
+            const thaiVoice = voices.find(voice => voice.lang === 'th-TH');
+            utterance.voice = googleVoice || kedaVoice || thaiVoice || null;
+            
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+        } else {
+            alert('ขออภัย เบราว์เซอร์ของคุณไม่รองรับการอ่านออกเสียง');
+        }
+    };
+
+    // Create QR Code container (for printing only)
+    const qrContainer = document.createElement('div');
+    qrContainer.className = 'text-center print-only';
+    const qrCanvas = document.createElement('div');
+    
+    try {
+        const encodedInstructions = encodeURIComponent(simplifiedInstructions);
+        const baseUrl = window.location.href.split('?')[0].split('#')[0];
+        const finalUrl = `${baseUrl}?speak=${encodedInstructions}`;
+
+        const typeNumber = 0; // Auto-detect
+        const errorCorrectionLevel = 'L';
+        const qr = qrcode(typeNumber, errorCorrectionLevel);
+        qr.addData(finalUrl); 
+        qr.make();
+        qrCanvas.innerHTML = qr.createImgTag(4, 8); // (cellSize, margin)
+        qrCanvas.firstChild.className = 'mx-auto';
+    
+        const qrLabel = document.createElement('p');
+        qrLabel.textContent = 'สแกน QR Code เพื่อฟังเสียง';
+        qrLabel.className = 'text-xs text-gray-600 mt-2';
+        qrContainer.appendChild(qrCanvas);
+        qrContainer.appendChild(qrLabel);
+
+    } catch (e) {
+        console.error("QR Code generation failed:", e);
+        if (e.message.includes('code length overflow')) {
+            qrContainer.innerHTML = '<p class="text-red-500 text-xs">ข้อความยาวเกินไป<br>ไม่สามารถสร้าง QR Code ได้</p>';
+        } else {
+            qrContainer.innerText = "ไม่สามารถสร้าง QR Code ได้";
+        }
+    }
+    
+    newWrapper.appendChild(speechButton);
+    newWrapper.appendChild(qrContainer);
+    container.appendChild(newWrapper);
+}
+
+
 function getPillColorName(mg) {
     switch(mg) {
         case 1: return 'สีขาว'; case 2: return 'สีส้ม'; case 3: return 'สีฟ้า';
@@ -771,6 +904,7 @@ function formatDayGroups(dayGroups) {
     return dayGroups.map(group => group.length === 1 ? `วัน${fullThaiDays[group[0]]}` : `วัน${fullThaiDays[group[0]]} ถึง วัน${fullThaiDays[group[group.length - 1]]}`).join(', ');
 }
 
+// ***** MODIFIED: This function now generates text for speech and calls the QR code function *****
 function generateMedicationInstructions(option) {
     let days = 7, periodText = '1 สัปดาห์';
     if (document.getElementById('useDateRange').checked) {
@@ -795,6 +929,8 @@ function generateMedicationInstructions(option) {
     });
 
     let html = '<div><h6 class="font-medium mb-3">วิธีกินยา:</h6><div class="flex flex-col gap-2">';
+    let instructionTextForSpeech = ''; // For text-to-speech and QR code
+
     const sortedMgs = Object.keys(medicationGroups).map(Number).sort((a, b) => b - a);
 
     if (sortedMgs.length === 0) {
@@ -807,8 +943,14 @@ function generateMedicationInstructions(option) {
             const pillText = quarter ? 'หนึ่งส่วนสี่เม็ด' : (half ? 'ครึ่งเม็ด' : `${count} เม็ด`);
             const dayText = formatDayGroups(groupConsecutiveDays(instrDays));
             const freq = instrDays.length;
+            
             const instructionLine = freq === 7 ? `${mg} mg (<strong>${getPillColorName(mg)}</strong>) กิน <strong>${pillText}</strong> ทุกวัน` :
                                                `${mg} mg (<strong>${getPillColorName(mg)}</strong>) กิน <strong>${pillText}</strong> สัปดาห์ละ ${freq} ครั้ง เฉพาะ <strong>${dayText}</strong>`;
+            
+            // Create a cleaner version for speech
+            const instructionLineForSpeech = freq === 7 ? `ยาขนาด ${mg} มิลลิกรัม ${getPillColorName(mg)} กิน ${pillText} ทุกวัน` :
+                                                `ยาขนาด ${mg} มิลลิกรัม ${getPillColorName(mg)} กิน ${pillText} สัปดาห์ละ ${freq} ครั้ง เฉพาะ ${dayText}`;
+            instructionTextForSpeech += instructionLineForSpeech + '. ';
             
             let totalInstances = 0;
             const startDateValue = document.getElementById('startDate').value;
@@ -833,8 +975,21 @@ function generateMedicationInstructions(option) {
         });
     });
     html += '</div></div>';
+
+    // Create a unique container for the QR code and speech button
+    const uniqueId = `qr-speech-container-${Date.now()}-${Math.random()}`;
+    html += `<div id="${uniqueId}"></div>`;
+
+    // Generate the QR code/button after the main HTML is rendered
+    setTimeout(() => {
+        if (instructionTextForSpeech) {
+            generateQrCodeAndSpeechButton(instructionTextForSpeech, uniqueId);
+        }
+    }, 10);
+    
     return html;
 }
+
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -945,21 +1100,23 @@ function printSelectedOption() {
     printContent(selectedCard.cloneNode(true), "ขนาดยาวาร์ฟาริน (Warfarin) ที่รับประทาน", `ขนาดยารวม ${selectedCard.dataset.totalDose} mg/สัปดาห์`);
 }
 
+// ***** MODIFIED: Updated print function to include logo and better formatting *****
 function printContent(elementToPrint, title, subtitle) {
     const printDiv = document.createElement('div');
     printDiv.className = 'print-content';
+    
     const header = document.createElement('div');
     header.className = 'print-header';
     header.innerHTML = `
-        <div style="position: relative; text-align: center; padding-bottom: 10px;">
-            <div style="position: absolute; top: 0; left: 0; font-size: 14px;">วันที่พิมพ์: ${new Date().toLocaleDateString('th-TH')}</div>
-            <div class="print-title" style="padding-top: 25px;">${title}</div>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="${document.getElementById('hospital-logo').src}" style="height: 60px; margin: 0 auto 10px;">
+            <div class="print-title">${title}</div>
             <div class="print-subtitle">${subtitle}</div>
+            <div style="font-size: 12px; margin-top: 5px;">วันที่พิมพ์: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
         </div>`;
     printDiv.appendChild(header);
 
-    const checkbox = elementToPrint.querySelector('.option-checkbox');
-    if (checkbox) checkbox.remove();
+    elementToPrint.querySelectorAll('.no-print').forEach(el => el.remove());
     const titleInCard = elementToPrint.querySelector('h4');
     if (titleInCard) titleInCard.remove();
     
