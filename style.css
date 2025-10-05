@@ -265,28 +265,38 @@ body {
     display: none;
 }
 
+
+/* ***** MODIFIED: Replaced the entire @media print block with a more stable method ***** */
 @media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    #main-content {
-        display: none !important;
+    /* Hide everything on the page by default */
+    body * {
+        visibility: hidden;
     }
 
+    /* Make the print container and everything inside it visible again */
+    .print-content, .print-content * {
+        visibility: visible;
+    }
+    
+    /* Position the print container to fill the page, detaching it from normal flow */
+    .print-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* General print setup */
     html, body {
         height: auto !important;
         min-height: unset !important;
         overflow: visible !important;
         background: #fff !important;
     }
-    
-    .print-content {
-        display: block !important;
-        visibility: visible;
-        position: static;
-        width: 100%;
-        padding: 0;
+
+    /* Still useful to have for elements we *never* want to print, even if accidentally visible */
+    .no-print {
+        display: none !important;
     }
     
     .print-header {
@@ -311,10 +321,6 @@ body {
         background: #fff !important;
         padding: 1rem !important;
         page-break-inside: avoid;
-    }
-
-    .option-checkbox {
-        display: none !important;
     }
 
     .option-card .grid, #manual-schedule-grid {
