@@ -47,11 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const decodedText = generateSpeechTextFromSchedule(schedule);
         
+        // Inject necessary CSS for pills
         const requiredCss = `body{font-family:'Sarabun',sans-serif}.pill{width:28px;height:28px;border-radius:50%;display:inline-block;margin:2px;position:relative;border:1px solid #000;box-shadow:inset 0 1px 1px rgba(255,255,255,.5)}.pill-half-left{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}.pill-quarter-left{clip-path:polygon(50% 50%,50% 0,0 0,0 50%)}.pill-1mg{background-color:#fff}.pill-2mg{background-color:#ff8c42}.pill-3mg{background-color:#5bc0f8}.pill-4mg{background-color:#fcd34d}.pill-5mg{background-color:#f687b3}.day-card-header-0{background-color:#dc2626}.day-card-header-1{background-color:#f59e0b}.day-card-header-2{background-color:#ec4899}.day-card-header-3{background-color:#22c55e}.day-card-header-4{background-color:#ea580c}.day-card-header-5{background-color:#3b82f6}.day-card-header-6{background-color:#8b5cf6}`;
         const style = document.createElement('style');
         style.textContent = requiredCss;
         document.head.appendChild(style);
 
+        // Generate the 7-day visual schedule HTML
         let visualScheduleHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; width: 100%; max-width: 900px; margin-bottom: 2rem;">';
         for (let i = 0; i < 7; i++) {
             const dayIndex = i; // Sunday (0) to Saturday (6)
@@ -71,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         visualScheduleHtml += '</div>';
         
+        // Replace the body with the speaker view layout
         document.body.innerHTML = `
             <div id="speaker-view" style="font-family: 'Sarabun', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; padding: 2em; background-color: #f0f9ff; color: #075985;">
                 <h1 style="color: #0c4a6e; font-size: 1.8rem; font-weight: bold; margin-bottom: 1.5rem;">ตารางการทานยา</h1>
@@ -615,12 +618,10 @@ function doseToPillText(totalDose, mg) {
     const numPills = totalDose / mg;
     const fullPills = Math.floor(numPills);
     const remainder = numPills - fullPills;
-
     let parts = [];
     if (fullPills > 0) {
         parts.push(`${fullPills} เม็ด`);
     }
-
     if (Math.abs(remainder - 0.5) < 0.01) {
         parts.push('ครึ่ง');
     } else if (Math.abs(remainder - 0.25) < 0.01) {
@@ -628,12 +629,10 @@ function doseToPillText(totalDose, mg) {
     } else if (Math.abs(remainder - 0.75) < 0.01) {
         parts.push('สามส่วนสี่');
     }
-    
     let text = parts.join('');
     if (fullPills === 0 && remainder > 0.01) {
          text += 'เม็ด';
     }
-    
     return text || '0 เม็ด';
 }
 
@@ -790,10 +789,14 @@ document.getElementById('previousDose').addEventListener('input', function() {
 ['startDate', 'endDate', 'numberOfWeeks'].forEach(id => document.getElementById(id).addEventListener('input', updateInstructionsOnDateChange));
 
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
 window.addEventListener('scroll', () => {
     const btn = document.getElementById('backToTopBtn');
-    btn.classList.toggle('opacity-0', window.pageYOffset <= 300);
-    btn.classList.toggle('invisible', window.pageYOffset <= 300);
+    if (window.pageYOffset > 300) {
+        btn.classList.remove('opacity-0', 'invisible');
+    } else {
+        btn.classList.add('opacity-0', 'invisible');
+    }
 });
 
 function printSelectedOption() {
@@ -804,7 +807,6 @@ function printSelectedOption() {
     }
 }
 
-// ***** MODIFIED: Added a setTimeout to delay removing the print content *****
 function printContent(elementToPrint, title, subtitle) {
     const printDiv = document.createElement('div');
     printDiv.className = 'print-content';
