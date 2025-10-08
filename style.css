@@ -377,10 +377,11 @@ body {
         page-break-inside: avoid;
     }
 
+    /* --- NEW: QR Code printing fix --- */
     .print-only img {
         width: 156px !important;
         height: 156px !important;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 10px auto !important; /* Adds space around the QR code */
+        display: block !important;
     }
 }

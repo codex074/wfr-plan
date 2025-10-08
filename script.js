@@ -617,7 +617,7 @@ function generateQrCodeAndSpeechButton(option, containerId) {
         const finalUrl = `${baseUrl}?schedule=${encodedSchedule}`;
         const qr = qrcode(0, 'L');
         qr.addData(finalUrl); qr.make();
-        qrContainer.innerHTML = qr.createImgTag(4, 8);
+        qrContainer.innerHTML = qr.createImgTag(5, 4);
         qrContainer.firstChild.className = 'mx-auto';
         qrContainer.innerHTML += '<p class="text-xs text-gray-600 mt-2">สแกน QR Code เพื่อฟังเสียง</p>';
     } catch (e) {
