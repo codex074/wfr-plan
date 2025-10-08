@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const compressedSchedule = JSON.parse(decodeURIComponent(scheduleParam));
         const schedule = {
             dailyDoses: compressedSchedule.d,
-            combos: compressedSchedule.c.map(dayCombo => 
+            combos: compressedSchedule.c.map(dayCombo =>
                 dayCombo.map(pill => ({
                     mg: pill.m,
                     count: pill.n,
@@ -45,11 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
             )
         };
 
-        // Generate the base text with newline characters
         const speechText = generateSpeechTextFromSchedule(schedule);
-        // ***** MODIFIED: Create a display version with HTML line breaks *****
         const displayText = speechText.replace(/\n/g, '<br>');
-        
+
         const requiredCss = `body{font-family:'Sarabun',sans-serif}.pill{width:28px;height:28px;border-radius:50%;display:inline-block;margin:2px;position:relative;border:1px solid #000;box-shadow:inset 0 1px 1px rgba(255,255,255,.5)}.pill-half-left{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}.pill-quarter-left{clip-path:polygon(50% 50%,50% 0,0 0,0 50%)}.pill-1mg{background-color:#fff}.pill-2mg{background-color:#ff8c42}.pill-3mg{background-color:#5bc0f8}.pill-4mg{background-color:#fcd34d}.pill-5mg{background-color:#f687b3}.day-card-header-0{background-color:#dc2626}.day-card-header-1{background-color:#f59e0b}.day-card-header-2{background-color:#ec4899}.day-card-header-3{background-color:#22c55e}.day-card-header-4{background-color:#ea580c}.day-card-header-5{background-color:#3b82f6}.day-card-header-6{background-color:#8b5cf6}`;
         const style = document.createElement('style');
         style.textContent = requiredCss;
@@ -65,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="border: 2px solid ${isDayOff ? '#fca5a5' : '#e5e7eb'}; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; text-align: center;">
                     <div class="day-card-header-${dayIndex}" style="font-weight: bold; padding: 0.75rem 0; font-size: 1.125rem; color: white;">${thaiDays[dayIndex]}</div>
                     <div style="background-color: ${isDayOff ? '#f9fafb' : 'white'}; padding: 1rem; min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        ${isDayOff 
+                        ${isDayOff
                             ? `<div style="font-size: 2.25rem; margin-bottom: 0.5rem;">🚫</div><div style="color: #dc2626; font-weight: bold; font-size: 0.875rem;">หยุดยา</div>`
                             : `<div style="font-size: 0.875rem; color: #374151; font-weight: 500; margin-bottom: 0.75rem;">${dose.toFixed(2)} mg</div><div>${(combo||[]).map(p=>Array(p.count||1).fill(`<span class="pill pill-${p.mg}mg ${p.quarter?'pill-quarter-left':p.half?'pill-half-left':''}"></span>`).join('')).join('')}</div>`
                         }
@@ -73,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         }
         visualScheduleHtml += '</div>';
-        
+
         document.body.innerHTML = `
             <div id="speaker-view" style="font-family: 'Sarabun', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; padding: 2em; background-color: #f0f9ff; color: #075985;">
                 <h1 style="color: #0c4a6e; font-size: 1.8rem; font-weight: bold; margin-bottom: 1.5rem;">ตารางการทานยา</h1>
@@ -93,14 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         const playButton = document.getElementById('play-speech-btn');
-        const speakText = () => {
-            // Use the original text with newlines for speech synthesis
-            const utterance = new SpeechSynthesisUtterance(speechText);
-            utterance.lang = 'th-TH'; utterance.rate = 0.9;
-            speechSynthesis.cancel(); speechSynthesis.speak(utterance);
-        };
-        playButton.onclick = speakText;
-        return; 
+        // ================== MODIFICATION START ==================
+        // เปลี่ยนจากการเรียกใช้ SpeechSynthesis มาเป็นฟังก์ชันใหม่ของเรา
+        playButton.onclick = () => playTextWithGoogleTTS(speechText, playButton);
+        // ==================  MODIFICATION END  ==================
+        return;
     }
 
     document.getElementById('mode-auto-btn').addEventListener('click', () => switchMode('auto'));
@@ -128,7 +123,7 @@ function switchMode(mode) {
         manualBtn.classList.remove('active');
         updatePrintButtonVisibility();
         autoPlaceholder.appendChild(dateCalculatorSection);
-    } else { 
+    } else {
         autoContainer.classList.add('hidden');
         manualContainer.classList.remove('hidden');
         autoBtn.classList.remove('active');
@@ -525,6 +520,63 @@ function generatePillVisual(combo) {
 //                              SHARED/COMMON FUNCTIONS
 //
 // ===================================================================================
+
+// ================== NEW FUNCTION START ==================
+/**
+ * Fetches audio from Google Cloud TTS via a Cloud Function and plays it.
+ * @param {string} text The text to be spoken.
+ * @param {HTMLElement} buttonElement The button element that was clicked.
+ */
+async function playTextWithGoogleTTS(text, buttonElement) {
+    // URL ของ Cloud Function ที่ได้มาหลังจาก Deploy สำเร็จ
+    const functionUrl = 'https://asia-southeast1-leaveopd-90667.cloudfunctions.net/synthesizeSpeech';
+    const originalButtonContent = buttonElement.innerHTML;
+    const statusDiv = document.getElementById('playing-status');
+
+    try {
+        // 1. เปลี่ยนข้อความบนปุ่มเพื่อบอกผู้ใช้ว่ากำลังโหลด
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '🔄 กำลังโหลดเสียง...';
+        if (statusDiv) statusDiv.style.display = 'block';
+
+        // 2. ส่ง request ไปยัง Cloud Function
+        const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+
+        // 3. รับข้อมูลเสียง (Base64) ที่ถูกส่งกลับมา
+        const data = await response.json();
+
+        // 4. สร้างไฟล์เสียงชั่วคราวจากข้อมูล Base64 แล้วสั่งให้เล่น
+        const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+        buttonElement.innerHTML = '▶️ กำลังเล่น...';
+        audio.play();
+
+        // 5. เมื่อเล่นจบแล้ว ให้คืนสภาพปุ่มกลับเป็นเหมือนเดิม
+        audio.onended = () => {
+            buttonElement.innerHTML = originalButtonContent;
+            buttonElement.disabled = false;
+            if (statusDiv) statusDiv.style.display = 'none';
+        };
+
+    } catch (error) {
+        console.error('Failed to play speech:', error);
+        alert('เกิดข้อผิดพลาดในการเล่นเสียง');
+        // หากเกิด error ให้คืนสภาพปุ่ม
+        buttonElement.innerHTML = originalButtonContent;
+        buttonElement.disabled = false;
+        if (statusDiv) statusDiv.style.display = 'none';
+    }
+}
+// ==================  NEW FUNCTION END  ==================
+
+
 function generateSpeechTextFromSchedule(schedule) {
     let speechText = '';
     const medicationGroups = {};
@@ -551,26 +603,23 @@ function generateQrCodeAndSpeechButton(option, containerId) {
     if (!container) return;
     container.querySelector('.qr-speech-wrapper')?.remove();
     const newWrapper = document.createElement('div');
-    newWrapper.className = 'qr-speech-wrapper mt-4'; 
+    newWrapper.className = 'qr-speech-wrapper mt-4';
     const speechText = generateSpeechTextFromSchedule(option);
 
     const speechButton = document.createElement('button');
     speechButton.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m9.9 9.9a1 1 0 01-1.414 0L12 18.293l-1.414 1.414a1 1 0 01-1.414-1.414l1.414-1.414L9.172 17a1 1 0 01-1.414-1.414l1.414-1.414L7.757 15.5a1 1 0 01-1.414-1.414l1.414-1.414L6.343 14a1 1 0 010-1.414l1.414-1.414L6.343 11a1 1 0 011.414-1.414l1.414 1.414L9.172 9.5a1 1 0 011.414-1.414l1.414 1.414L12 8.293l1.414-1.414a1 1 0 011.414 1.414L13.414 9.5l1.414 1.414a1 1 0 010 1.414l-1.414 1.414 1.414 1.414a1 1 0 01-1.414 1.414l-1.414-1.414-1.414 1.414z"></path></svg><span>ฟังเสียง</span>`;
     speechButton.className = 'toggle-btn flex items-center justify-center no-print';
-    speechButton.onclick = () => {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(speechText);
-            utterance.lang = 'th-TH'; utterance.rate = 0.9;
-            speechSynthesis.cancel(); speechSynthesis.speak(utterance);
-        } else { alert('เบราว์เซอร์ของคุณไม่รองรับการอ่านออกเสียง'); }
-    };
+    // ================== MODIFICATION START ==================
+    // เปลี่ยนจากการเรียกใช้ SpeechSynthesis มาเป็นฟังก์ชันใหม่ของเรา
+    speechButton.onclick = () => playTextWithGoogleTTS(speechText, speechButton);
+    // ==================  MODIFICATION END  ==================
 
     const qrContainer = document.createElement('div');
     qrContainer.className = 'text-center print-only';
     try {
         const compressedSchedule = {
             d: option.dailyDoses,
-            c: option.combos.map(dayCombo => 
+            c: option.combos.map(dayCombo =>
                 dayCombo.map(pill => ({
                     m: pill.mg,
                     n: pill.count,
@@ -591,7 +640,7 @@ function generateQrCodeAndSpeechButton(option, containerId) {
         console.error("QR Code generation failed:", e);
         qrContainer.innerHTML = '<p class="text-red-500 text-xs">ข้อมูลยาวเกินไป ไม่สามารถสร้าง QR Code ได้</p>';
     }
-    
+
     newWrapper.appendChild(speechButton);
     newWrapper.appendChild(qrContainer);
     container.appendChild(newWrapper);
@@ -607,7 +656,7 @@ function groupConsecutiveDays(days) {
     if (days.length === 0) return [];
     const sorted = [...days].sort((a, b) => a - b); const groups = []; let currentGroup = [sorted[0]];
     for (let i = 1; i < sorted.length; i++) {
-        if (sorted[i] === sorted[i-1] + 1) { currentGroup.push(sorted[i]); } 
+        if (sorted[i] === sorted[i-1] + 1) { currentGroup.push(sorted[i]); }
         else { groups.push(currentGroup); currentGroup = [sorted[i]]; }
     }
     groups.push(currentGroup); return groups;
@@ -643,8 +692,8 @@ function generateMedicationInstructions(option) {
     let days = 7, periodText = '1 สัปดาห์';
     if (document.getElementById('useDateRange').checked) {
         const start = new Date(document.getElementById('startDate').value), end = new Date(document.getElementById('endDate').value);
-        if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end >= start) { 
-            days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1; periodText = `${days} วัน`; 
+        if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end >= start) {
+            days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1; periodText = `${days} วัน`;
         }
     } else if (document.getElementById('useWeeks').checked) {
         const weeks = parseInt(document.getElementById('numberOfWeeks').value) || 1;
