@@ -46,7 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const speechText = generateSpeechTextFromSchedule(schedule);
-        const displayText = speechText.replace(/\n/g, '<br>');
+        // For display, we need to remove SSML tags
+        const displayText = speechText.replace(/<[^>]*>/g, " ").replace(/\s+/g, ' ').trim();
 
         const requiredCss = `body{font-family:'Sarabun',sans-serif}.pill{width:28px;height:28px;border-radius:50%;display:inline-block;margin:2px;position:relative;border:1px solid #000;box-shadow:inset 0 1px 1px rgba(255,255,255,.5)}.pill-half-left{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}.pill-quarter-left{clip-path:polygon(50% 50%,50% 0,0 0,0 50%)}.pill-1mg{background-color:#fff}.pill-2mg{background-color:#ff8c42}.pill-3mg{background-color:#5bc0f8}.pill-4mg{background-color:#fcd34d}.pill-5mg{background-color:#f687b3}.day-card-header-0{background-color:#dc2626}.day-card-header-1{background-color:#f59e0b}.day-card-header-2{background-color:#ec4899}.day-card-header-3{background-color:#22c55e}.day-card-header-4{background-color:#ea580c}.day-card-header-5{background-color:#3b82f6}.day-card-header-6{background-color:#8b5cf6}`;
         const style = document.createElement('style');
@@ -91,10 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         const playButton = document.getElementById('play-speech-btn');
-        // ================== MODIFICATION START ==================
-        // เปลี่ยนจากการเรียกใช้ SpeechSynthesis มาเป็นฟังก์ชันใหม่ของเรา
         playButton.onclick = () => playTextWithGoogleTTS(speechText, playButton);
-        // ==================  MODIFICATION END  ==================
         return;
     }
 
@@ -521,44 +519,32 @@ function generatePillVisual(combo) {
 //
 // ===================================================================================
 
-// ================== NEW FUNCTION START ==================
-/**
- * Fetches audio from Google Cloud TTS via a Cloud Function and plays it.
- * @param {string} text The text to be spoken.
- * @param {HTMLElement} buttonElement The button element that was clicked.
- */
 async function playTextWithGoogleTTS(text, buttonElement) {
-    // URL ของ Cloud Function ที่ได้มาหลังจาก Deploy สำเร็จ
     const functionUrl = 'https://asia-southeast1-leaveopd-90667.cloudfunctions.net/synthesizeSpeech';
     const originalButtonContent = buttonElement.innerHTML;
     const statusDiv = document.getElementById('playing-status');
 
     try {
-        // 1. เปลี่ยนข้อความบนปุ่มเพื่อบอกผู้ใช้ว่ากำลังโหลด
         buttonElement.disabled = true;
         buttonElement.innerHTML = '🔄 กำลังโหลดเสียง...';
         if (statusDiv) statusDiv.style.display = 'block';
 
-        // 2. ส่ง request ไปยัง Cloud Function
         const response = await fetch(functionUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
+            body: JSON.stringify({ ssml: text })
         });
 
         if (!response.ok) {
-            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Server error (${response.status}): ${errorText}`);
         }
 
-        // 3. รับข้อมูลเสียง (Base64) ที่ถูกส่งกลับมา
         const data = await response.json();
-
-        // 4. สร้างไฟล์เสียงชั่วคราวจากข้อมูล Base64 แล้วสั่งให้เล่น
         const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
         buttonElement.innerHTML = '▶️ กำลังเล่น...';
         audio.play();
 
-        // 5. เมื่อเล่นจบแล้ว ให้คืนสภาพปุ่มกลับเป็นเหมือนเดิม
         audio.onended = () => {
             buttonElement.innerHTML = originalButtonContent;
             buttonElement.disabled = false;
@@ -567,15 +553,12 @@ async function playTextWithGoogleTTS(text, buttonElement) {
 
     } catch (error) {
         console.error('Failed to play speech:', error);
-        alert('เกิดข้อผิดพลาดในการเล่นเสียง');
-        // หากเกิด error ให้คืนสภาพปุ่ม
+        alert('เกิดข้อผิดพลาด: ' + error.message);
         buttonElement.innerHTML = originalButtonContent;
         buttonElement.disabled = false;
         if (statusDiv) statusDiv.style.display = 'none';
     }
 }
-// ==================  NEW FUNCTION END  ==================
-
 
 function generateSpeechTextFromSchedule(schedule) {
     let speechText = '';
@@ -593,9 +576,9 @@ function generateSpeechTextFromSchedule(schedule) {
         const dayText = formatDayGroups(groupConsecutiveDays(instrDays));
         const freq = instrDays.length;
         const line = freq === 7 ? `ยาขนาด ${mg} มิลลิกรัม ${getPillColorName(mg)} กิน ${pillText} ทุกวัน` : `ยาขนาด ${mg} มิลลิกรัม ${getPillColorName(mg)} กิน ${pillText} สัปดาห์ละ ${freq} ครั้ง เฉพาะ ${dayText}`;
-        speechText += line + '.\n';
+        speechText += line + '. <break time="700ms"/> ';
     });
-    return speechText;
+    return `<speak>${speechText}</speak>`;
 }
 
 function generateQrCodeAndSpeechButton(option, containerId) {
@@ -609,10 +592,7 @@ function generateQrCodeAndSpeechButton(option, containerId) {
     const speechButton = document.createElement('button');
     speechButton.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m9.9 9.9a1 1 0 01-1.414 0L12 18.293l-1.414 1.414a1 1 0 01-1.414-1.414l1.414-1.414L9.172 17a1 1 0 01-1.414-1.414l1.414-1.414L7.757 15.5a1 1 0 01-1.414-1.414l1.414-1.414L6.343 14a1 1 0 010-1.414l1.414-1.414L6.343 11a1 1 0 011.414-1.414l1.414 1.414L9.172 9.5a1 1 0 011.414-1.414l1.414 1.414L12 8.293l1.414-1.414a1 1 0 011.414 1.414L13.414 9.5l1.414 1.414a1 1 0 010 1.414l-1.414 1.414 1.414 1.414a1 1 0 01-1.414 1.414l-1.414-1.414-1.414 1.414z"></path></svg><span>ฟังเสียง</span>`;
     speechButton.className = 'toggle-btn flex items-center justify-center no-print';
-    // ================== MODIFICATION START ==================
-    // เปลี่ยนจากการเรียกใช้ SpeechSynthesis มาเป็นฟังก์ชันใหม่ของเรา
     speechButton.onclick = () => playTextWithGoogleTTS(speechText, speechButton);
-    // ==================  MODIFICATION END  ==================
 
     const qrContainer = document.createElement('div');
     qrContainer.className = 'text-center print-only';
