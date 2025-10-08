@@ -45,8 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
             )
         };
 
+        const totalWeeklyDose = schedule.dailyDoses.reduce((sum, dose) => sum + dose, 0);
+
         const speechText = generateSpeechTextFromSchedule(schedule);
-        // For display, we need to remove SSML tags
         const displayText = speechText.replace(/<[^>]*>/g, " ").replace(/\s+/g, ' ').trim();
 
         const requiredCss = `body{font-family:'Sarabun',sans-serif}.pill{width:28px;height:28px;border-radius:50%;display:inline-block;margin:2px;position:relative;border:1px solid #000;box-shadow:inset 0 1px 1px rgba(255,255,255,.5)}.pill-half-left{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}.pill-quarter-left{clip-path:polygon(50% 50%,50% 0,0 0,0 50%)}.pill-1mg{background-color:#fff}.pill-2mg{background-color:#ff8c42}.pill-3mg{background-color:#5bc0f8}.pill-4mg{background-color:#fcd34d}.pill-5mg{background-color:#f687b3}.day-card-header-0{background-color:#dc2626}.day-card-header-1{background-color:#f59e0b}.day-card-header-2{background-color:#ec4899}.day-card-header-3{background-color:#22c55e}.day-card-header-4{background-color:#ea580c}.day-card-header-5{background-color:#3b82f6}.day-card-header-6{background-color:#8b5cf6}`;
@@ -75,7 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.innerHTML = `
             <div id="speaker-view" style="font-family: 'Sarabun', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; text-align: center; padding: 2em; background-color: #f0f9ff; color: #075985;">
-                <h1 style="color: #0c4a6e; font-size: 1.8rem; font-weight: bold; margin-bottom: 1.5rem;">ตารางการทานยา</h1>
+                <h1 style="color: #0c4a6e; font-size: 1.8rem; font-weight: bold; margin-bottom: 0.5rem;">ตารางการทานยาวาร์ฟาริน</h1>
+                <p style="font-size: 1.2rem; color: #075985; margin-bottom: 1.5rem; font-weight: 500;">ขนาดยารวม ${totalWeeklyDose.toFixed(2)} mg/สัปดาห์</p>
                 ${visualScheduleHtml}
                 <div id="instruction-text">
                     <h2 style="color: #0c4a6e; font-size: 1.5rem; margin-bottom: 1rem;">วิธีกินยา (สรุป)</h2>
@@ -84,8 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </p>
                 </div>
                 <button id="play-speech-btn" style="background-color: #0ea5e9; color: white; border: none; padding: 1rem 2rem; border-radius: 0.5rem; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
-                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m9.9 9.9a1 1 0 01-1.414 0L12 18.293l-1.414 1.414a1 1 0 01-1.414-1.414l1.414-1.414L9.172 17a1 1 0 01-1.414-1.414l1.414-1.414L7.757 15.5a1 1 0 01-1.414-1.414l1.414-1.414L6.343 14a1 1 0 010-1.414l1.414-1.414L6.343 11a1 1 0 011.414-1.414l1.414 1.414L9.172 9.5a1 1 0 011.414-1.414l1.414 1.414L12 8.293l1.414-1.414a1 1 0 011.414 1.414L13.414 9.5l1.414 1.414a1 1 0 010 1.414l-1.414 1.414 1.414 1.414a1 1 0 01-1.414 1.414l-1.414-1.414-1.414 1.414z"></path></svg>
-                    แตะเพื่อฟังเสียง
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.518"></path></svg>
+                    แตะเพื่อฟังวิธีทานยา
                 </button>
                  <div id="playing-status" style="display: none; margin-top: 1rem;">กำลังอ่าน...</div>
             </div>
@@ -520,8 +522,8 @@ function generatePillVisual(combo) {
 // ===================================================================================
 
 async function playTextWithGoogleTTS(text, buttonElement) {
-    const functionUrl = 'https://asia-southeast1-leaveopd-90667.cloudfunctions.net/synthesizeSpeech';
     const originalButtonContent = buttonElement.innerHTML;
+    const functionUrl = 'https://asia-southeast1-leaveopd-90667.cloudfunctions.net/synthesizeSpeech';
     const statusDiv = document.getElementById('playing-status');
 
     try {
@@ -542,6 +544,7 @@ async function playTextWithGoogleTTS(text, buttonElement) {
 
         const data = await response.json();
         const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+        
         buttonElement.innerHTML = '▶️ กำลังเล่น...';
         audio.play();
 
@@ -559,6 +562,7 @@ async function playTextWithGoogleTTS(text, buttonElement) {
         if (statusDiv) statusDiv.style.display = 'none';
     }
 }
+
 
 function generateSpeechTextFromSchedule(schedule) {
     let speechText = '';
@@ -590,7 +594,7 @@ function generateQrCodeAndSpeechButton(option, containerId) {
     const speechText = generateSpeechTextFromSchedule(option);
 
     const speechButton = document.createElement('button');
-    speechButton.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.858 15.858a5 5 0 01-2.828-7.072m9.9 9.9a1 1 0 01-1.414 0L12 18.293l-1.414 1.414a1 1 0 01-1.414-1.414l1.414-1.414L9.172 17a1 1 0 01-1.414-1.414l1.414-1.414L7.757 15.5a1 1 0 01-1.414-1.414l1.414-1.414L6.343 14a1 1 0 010-1.414l1.414-1.414L6.343 11a1 1 0 011.414-1.414l1.414 1.414L9.172 9.5a1 1 0 011.414-1.414l1.414 1.414L12 8.293l1.414-1.414a1 1 0 011.414 1.414L13.414 9.5l1.414 1.414a1 1 0 010 1.414l-1.414 1.414 1.414 1.414a1 1 0 01-1.414 1.414l-1.414-1.414-1.414 1.414z"></path></svg><span>ฟังเสียง</span>`;
+    speechButton.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.518"></path></svg><span>ฟังวิธีทานยา</span>`;
     speechButton.className = 'toggle-btn flex items-center justify-center no-print';
     speechButton.onclick = () => playTextWithGoogleTTS(speechText, speechButton);
 
