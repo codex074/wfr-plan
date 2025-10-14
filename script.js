@@ -5,7 +5,7 @@ const dayHeaderColors = ['bg-red-600', 'bg-yellow-500', 'bg-pink-600', 'bg-green
 
 // ===== ★★★★★ สำคัญ: แก้ไข URL ตรงนี้ ★★★★★ =====
 // ให้ใส่ URL ของเว็บแอปบน GitHub Pages ของคุณตรงนี้
-const PUBLIC_BASE_URL = 'https://teeradech-w.github.io/CalWarfarin/';
+const PUBLIC_BASE_URL = 'https://codex074.github.io/wfr-plan/';
 // =======================================================
 
 // State for Auto Mode
