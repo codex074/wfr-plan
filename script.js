@@ -5,7 +5,8 @@ const dayHeaderColors = ['bg-red-600', 'bg-yellow-500', 'bg-pink-600', 'bg-green
 
 // ===== ★★★★★ สำคัญ: แก้ไข URL ตรงนี้ ★★★★★ =====
 // ให้ใส่ URL ของเว็บแอปบน GitHub Pages ของคุณตรงนี้
-const PUBLIC_BASE_URL = 'https://codex074.github.io/wfr-plan/';
+// ตัวอย่าง: const PUBLIC_BASE_URL = 'https://your-username.github.io/your-repo-name/';
+const PUBLIC_BASE_URL = 'https://codex074.github.io/wfr';
 // =======================================================
 
 // State for Auto Mode
@@ -987,9 +988,7 @@ function updatePrintButtonVisibility() {
     document.getElementById('printBtnAuto').classList.toggle('hidden', selectedOption < 0);
 }
 
-document.getElementById('previousDose').addEventListener('input', function() {
-    showChangeIndicator();
-});
+document.getElementById('previousDose').addEventListener('input', showChangeIndicator);
 ['previousDose', 'newDose'].forEach(id => document.getElementById(id).addEventListener('input', hideResults));
 
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
