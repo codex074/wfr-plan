@@ -6,7 +6,7 @@ const dayHeaderColors = ['bg-red-600', 'bg-yellow-500', 'bg-pink-600', 'bg-green
 // ===== ★★★★★ สำคัญ: แก้ไข URL ตรงนี้ ★★★★★ =====
 // ให้ใส่ URL ของเว็บแอปบน GitHub Pages ของคุณตรงนี้
 // ตัวอย่าง: const PUBLIC_BASE_URL = 'https://your-username.github.io/your-repo-name/';
-const PUBLIC_BASE_URL = 'https://codex074.github.io/wfr';
+const PUBLIC_BASE_URL = 'https://codex074.github.io/wfr-plan/';
 // =======================================================
 
 // State for Auto Mode
@@ -1071,3 +1071,4 @@ function printContent(elementToPrint, title, subtitle) {
         document.body.removeChild(printDiv);
     }, 500);
 }
+
