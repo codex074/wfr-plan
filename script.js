@@ -3,6 +3,11 @@ const thaiDays = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
 const fullThaiDays = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
 const dayHeaderColors = ['bg-red-600', 'bg-yellow-500', 'bg-pink-600', 'bg-green-600', 'bg-orange-600', 'bg-blue-600', 'bg-purple-600'];
 
+// ===== ★★★★★ สำคัญ: แก้ไข URL ตรงนี้ ★★★★★ =====
+// ให้ใส่ URL ของเว็บแอปบน GitHub Pages ของคุณตรงนี้
+const PUBLIC_BASE_URL = 'https://teeradech-w.github.io/CalWarfarin/';
+// =======================================================
+
 // State for Auto Mode
 let allCalculatedOptions = [];
 let displayedOptionsCount = 0;
@@ -46,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const totalWeeklyDose = schedule.dailyDoses.reduce((sum, dose) => sum + dose, 0);
-        const speechText = generateSpeechTextFromSchedule(schedule); // For Audio
-        const displayHTML = generateDisplayInstructionsHTML(schedule); // For Visual Display
+        const speechText = generateSpeechTextFromSchedule(schedule);
+        const displayHTML = generateDisplayInstructionsHTML(schedule);
 
         const requiredCss = `body{font-family:'Sarabun',sans-serif}.pill{width:28px;height:28px;border-radius:50%;display:inline-block;margin:2px;position:relative;border:1px solid #000;box-shadow:inset 0 1px 1px rgba(255,255,255,.5)}.pill-half-left{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}.pill-quarter-left{clip-path:polygon(50% 50%,50% 0,0 0,0 50%)}.pill-1mg{background-color:#fff}.pill-2mg{background-color:#ff8c42}.pill-3mg{background-color:#5bc0f8}.pill-4mg{background-color:#fcd34d}.pill-5mg{background-color:#f687b3}.day-card-header-0{background-color:#dc2626}.day-card-header-1{background-color:#f59e0b}.day-card-header-2{background-color:#ec4899}.day-card-header-3{background-color:#22c55e}.day-card-header-4{background-color:#ea580c}.day-card-header-5{background-color:#3b82f6}.day-card-header-6{background-color:#8b5cf6}`;
         const style = document.createElement('style');
@@ -397,7 +402,6 @@ function clearInputs() {
 
 function hideResults() {
     document.getElementById('results').classList.add('hidden');
-    document.getElementById('changeIndicator').classList.add('hidden');
     selectedOption = -1;
     allCalculatedOptions = [];
     displayedOptionsCount = 0;
@@ -422,13 +426,22 @@ function showChangeIndicator() {
     const newDose = parseFloat(document.getElementById('newDose').value) || 0;
     const indicator = document.getElementById('changeIndicator');
     const changeText = document.getElementById('changeText');
-    if (previousDose === 0) {
-        indicator.classList.add('hidden');
+    
+    indicator.classList.remove('hidden');
+
+    if (previousDose === 0 && newDose > 0) {
+        changeText.innerHTML = `<div class="text-gray-600"><div class="text-3xl font-bold">ขนาดยาใหม่</div><div class="text-lg">${newDose.toFixed(1)} mg/wk</div></div>`;
         return;
     }
+    
+    if (previousDose === 0) {
+        changeText.innerHTML = '';
+        return;
+    }
+
     const changePercent = ((newDose - previousDose) / previousDose) * 100;
     const changeMg = newDose - previousDose;
-    indicator.classList.remove('hidden');
+
     if (Math.abs(changePercent) < 0.1) {
         changeText.innerHTML = `<div class="text-blue-600"><div class="text-3xl font-bold">คงที่ (0.0%)</div><div class="text-lg">${previousDose.toFixed(1)} → ${newDose.toFixed(1)} mg/wk</div></div>`;
     } else if (changePercent > 0) {
@@ -695,6 +708,48 @@ function generateSpeechTextFromSchedule(schedule) {
     return `<speak>${speechText}</speak>`;
 }
 
+function generateDisplayInstructionsHTML(schedule) {
+    let html = '<div class="flex flex-col gap-2">';
+    const medicationGroups = {};
+
+    (schedule.combos || []).forEach((combo, dayIndex) => {
+        if (schedule.dailyDoses[dayIndex] && schedule.dailyDoses[dayIndex] > 0.01) {
+            (combo || []).forEach(pill => {
+                const key = `${pill.mg}-${pill.half ? 'h' : pill.quarter ? 'q' : 'f'}`;
+                if (!medicationGroups[key]) {
+                    medicationGroups[key] = {
+                        mg: pill.mg,
+                        half: pill.half,
+                        quarter: pill.quarter,
+                        days: []
+                    };
+                }
+                medicationGroups[key].days.push(dayIndex);
+            });
+        }
+    });
+
+    if (Object.keys(medicationGroups).length === 0 && schedule.dailyDoses.every(d => d < 0.01)) {
+        html += '<p class="text-gray-700 font-semibold">หยุดยาทุกวันตามคำสั่งแพทย์</p>';
+    } else {
+        Object.values(medicationGroups).sort((a,b) => b.mg - a.mg).forEach(group => {
+            const { mg, half, quarter, days } = group;
+            const pillText = quarter ? 'หนึ่งส่วนสี่เม็ด' : (half ? 'ครึ่งเม็ด' : '1 เม็ด');
+            const dayText = formatDayGroups(groupConsecutiveDays(days));
+            const freq = days.length;
+            const instructionLineForDisplay = `${mg} mg (${getPillColorName(mg)}) กิน ${pillText} สัปดาห์ละ ${freq} ครั้ง เฉพาะ ${dayText}`;
+            const pillCountText = `${freq} เม็ด/1 สัปดาห์`;
+            
+            const pillIconHtml = `<span class="pill pill-${mg}mg ${quarter ? 'pill-quarter-left' : (half ? 'pill-half-left' : '')}"></span>`;
+
+            html += `<div class="text-sm p-3 ${getPillBgColor(mg)} border rounded flex items-center"><div class="flex-shrink-0 w-10 flex justify-center items-center mr-3">${pillIconHtml}</div><div class="flex-grow flex justify-between items-center gap-2"><span class="flex-grow">${instructionLineForDisplay}</span><span class="text-xs text-gray-600 font-semibold flex-shrink-0 whitespace-nowrap">${pillCountText}</span></div></div>`;
+        });
+    }
+
+    html += '</div>';
+    return html;
+}
+
 function generateQrCodeAndSpeechButton(option, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -723,8 +778,7 @@ function generateQrCodeAndSpeechButton(option, containerId) {
             )
         };
         const encodedSchedule = encodeURIComponent(JSON.stringify(compressedSchedule));
-        const baseUrl = window.location.href.split('?')[0].split('#')[0];
-        const finalUrl = `${baseUrl}?schedule=${encodedSchedule}`;
+        const finalUrl = `${PUBLIC_BASE_URL}?schedule=${encodedSchedule}`;
         const qr = qrcode(0, 'L');
         qr.addData(finalUrl); qr.make();
         qrContainer.innerHTML = qr.createImgTag(6, 4);
@@ -934,7 +988,7 @@ function updatePrintButtonVisibility() {
 }
 
 document.getElementById('previousDose').addEventListener('input', function() {
-    document.getElementById('adjustmentButtons').classList.toggle('hidden', !(parseFloat(this.value) > 0));
+    showChangeIndicator();
 });
 ['previousDose', 'newDose'].forEach(id => document.getElementById(id).addEventListener('input', hideResults));
 
